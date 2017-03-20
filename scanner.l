@@ -1,7 +1,13 @@
 %{
 	#include <stdio.h>
+	#include <string.h>
 
 int	lineCount=0;
+char lastsentence[3000];
+char tempstring[3000];
+int tokenoff = 0;
+int sourceoff = 0;
+
 %}
 
 key "printf"|"scanf"|"for"|"while"|"do"|"if"|"else"|"switch"|"break"|"continue"|"true"|"false"|"case"|"return"|"void"|"null"|"const"|"default"
@@ -11,13 +17,40 @@ single_operator (\+|-|<|>|\*|\/|!|\||\&|\%|=)
 punctuation (:|;|,|\.|\[|\]|\(|\)|\{|\})
 strings (\".*\")
 
+%x COMMENT
+
 %%
-\/\/.* {
-	ECHO;
+"#pragma source off" {
+	sourceoff = 1;
 }
+
+"#pragma token off" {
+	tokenoff = 1;
+}
+
+<COMMENT>.*\n {
+		lineCount++;
+		printf("%d:%s", lineCount,lastsentence);
+		strcpy(lastsentence,yytext);
+		if(tokenoff==0) {
+			yyless(0);
+			BEGIN 0;
+		}
+}
+
+\n {
+	if(sourceoff==0)BEGIN COMMENT;
+}
+
+\/\/.* {
+strcpy(lastsentence,yytext);
+	strcat(lastsentence,"\n");
+
+}
+
 {strings} {
-	printf("#string:");
-	ECHO;
+	strncpy(tempstring,yytext+1,strlen(yytext)-2);
+	printf("#string:%s",tempstring);
 	printf("\n");
 }
 
@@ -32,7 +65,7 @@ strings (\".*\")
 	printf("\n");
 }
 [-+]?[0-9]+\.?[0-9]+([eE][-+]?[0-9]+) {
-	printf("#Scientific notation:");
+	printf("#sci:");
 	ECHO;
 	printf("\n");
 }
@@ -78,10 +111,15 @@ strings (\".*\")
 %%
 
 int main(void) {
-  yylex();
-  return 0;
+	yylex();
+	return 0;
 }
 
 int yywrap() {
-  return 1;
+	if(sourceoff==0)
+	{
+		lineCount++;
+		printf("%d:%s", lineCount,lastsentence);	
+	}
+	return 1;
 }
