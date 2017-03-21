@@ -16,93 +16,107 @@ double_operator (\+\+|--|<<|>>|==|===|<=|>=|!=|\|\||\&\&)
 single_operator (\+|-|<|>|\*|\/|!|\||\&|\%|=)
 punctuation (:|;|,|\.|\[|\]|\(|\)|\{|\})
 strings (\".*\")
+chars ('.*')
 
 %x COMMENT
 
 %%
-"#pragma source off" {
+<COMMENT>"#pragma source off" {
 	sourceoff = 1;
 }
 
-"#pragma token off" {
+<COMMENT>"#pragma token off" {
 	tokenoff = 1;
 }
 
-<COMMENT>.*\n {
-		lineCount++;
-		fprintf(of,"%d:%s", lineCount,lastsentence);
+.*\n {
 		strcpy(lastsentence,yytext);
 		if(tokenoff==0) {
 			yyless(0);
-			BEGIN 0;
+			BEGIN COMMENT;
+		}else
+		{
+			lineCount++;
+			fprintf(of,"%d:%s", lineCount,lastsentence);
 		}
 }
 
-\n {
-	if(sourceoff==0)BEGIN COMMENT;
+<COMMENT>\n {
+
+	if(sourceoff==0)
+	{
+		lineCount++;
+		fprintf(of,"%d:%s", lineCount,lastsentence);
+		BEGIN 0;
+	}
 }
 
-\/\/.* {
+<COMMENT>\/\/.* {
 strcpy(lastsentence,yytext);
 	strcat(lastsentence,"\n");
 
 }
 
-{strings} {
+<COMMENT>{strings} {
 	strncpy(tempstring,yytext+1,strlen(yytext)-2);
 	fprintf(of,"#string:%s",tempstring);
 	fprintf(of,"\n");
 }
 
-{key} { 
+<COMMENT>{chars} {
+	fprintf(of,"#char:%s",yytext);
+	fprintf(of,"\n");
+}
+
+<COMMENT>{key} { 
 	fprintf(of,"#key:");
 	fprintf(of,"%s",yytext);
 	fprintf(of,"\n");
 }
-{type} { 
+<COMMENT>{type} { 
 	fprintf(of,"#key:");
 	fprintf(of,"%s",yytext);
 	fprintf(of,"\n");
 }
-[-+]?[0-9]+\.?[0-9]+([eE][-+]?[0-9]+) {
+<COMMENT>[-+]?[0-9]+\.?[0-9]+([eE][-+]?[0-9]+) {
 	fprintf(of,"#sci:");
 	fprintf(of,"%s",yytext);
 	fprintf(of,"\n");
 }
 
-[-+]?[0-9]+\.?[0-9]+ {
+<COMMENT>[-+]?[0-9]+\.?[0-9]+ {
 	fprintf(of,"#double:");
 	fprintf(of,"%s",yytext);
 	fprintf(of,"\n");
 }
 
-[-+]?[0-9]+ {
+<COMMENT>[-+]?[0-9]+ {
 	fprintf(of,"#integer:");
 	fprintf(of,"%s",yytext);
 	fprintf(of,"\n");
 }
 
-{double_operator} {
+<COMMENT>{double_operator} {
 	fprintf(of,"#op:");
 	fprintf(of,"%s",yytext);
 	fprintf(of,"\n");
 }
 
-{single_operator} {
+<COMMENT>{single_operator} {
 	fprintf(of,"#op:");
 	fprintf(of,"%s",yytext);
 	fprintf(of,"\n");
 }
 
-{punctuation} {
+<COMMENT>{punctuation} {
 	fprintf(of,"#punc:");
 	fprintf(of,"%s",yytext);
 	fprintf(of,"\n");
 }
 
-" "
+<COMMENT>" "
 
-[a-zA-Z]+ {
+<COMMENT>[a-zA-Z]+ {
 	fprintf(of,"#id:");
 	fprintf(of,"%s",yytext);
 	fprintf(of,"\n");
@@ -118,10 +132,5 @@ int main(void) {
 }
 
 int yywrap() {
-	if(sourceoff==0)
-	{
-		lineCount++;
-		fprintf(of,"%d:%s", lineCount,lastsentence);	
-	}
 	return 1;
 }
