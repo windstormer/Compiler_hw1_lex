@@ -1,12 +1,14 @@
+%option yylineno
+
 %{
 	#include <stdio.h>
 	#include <string.h>
-		FILE *of;
 int	lineCount=0;
 char lastsentence[3000];
 char tempstring[3000];
 int tokenoff = 0;
 int sourceoff = 0;
+
 
 %}
 
@@ -21,13 +23,7 @@ chars ('.*')
 %x COMMENT
 
 %%
-<COMMENT>"#pragma source off" {
-	sourceoff = 1;
-}
 
-<COMMENT>"#pragma token off" {
-	tokenoff = 1;
-}
 
 .*\n {
 		strcpy(lastsentence,yytext);
@@ -37,8 +33,15 @@ chars ('.*')
 		}else
 		{
 			lineCount++;
-			fprintf(of,"%d:%s", lineCount,lastsentence);
+			fprintf(stdout,"%d:%s", lineCount,lastsentence);
 		}
+}
+<COMMENT>"#pragma source off" {
+	sourceoff = 1;
+}
+
+<COMMENT>"#pragma token off" {
+	tokenoff = 1;
 }
 
 <COMMENT>\n {
@@ -46,7 +49,7 @@ chars ('.*')
 	if(sourceoff==0)
 	{
 		lineCount++;
-		fprintf(of,"%d:%s", lineCount,lastsentence);
+		fprintf(stdout,"%d:%s", lineCount,lastsentence);
 		BEGIN 0;
 	}
 }
@@ -59,74 +62,80 @@ strcpy(lastsentence,yytext);
 
 <COMMENT>{strings} {
 	strncpy(tempstring,yytext+1,strlen(yytext)-2);
-	fprintf(of,"#string:%s",tempstring);
-	fprintf(of,"\n");
+	fprintf(stdout,"#string:%s",tempstring);
+	fprintf(stdout,"\n");
 }
 
 <COMMENT>{chars} {
-	fprintf(of,"#char:%s",yytext);
-	fprintf(of,"\n");
+	fprintf(stdout,"#char:%s",yytext);
+	fprintf(stdout,"\n");
 }
 
 <COMMENT>{key} { 
-	fprintf(of,"#key:");
-	fprintf(of,"%s",yytext);
-	fprintf(of,"\n");
+	fprintf(stdout,"#key:");
+	fprintf(stdout,"%s",yytext);
+	fprintf(stdout,"\n");
 }
 <COMMENT>{type} { 
-	fprintf(of,"#key:");
-	fprintf(of,"%s",yytext);
-	fprintf(of,"\n");
-}
-<COMMENT>[-+]?[0-9]+\.?[0-9]+([eE][-+]?[0-9]+) {
-	fprintf(of,"#sci:");
-	fprintf(of,"%s",yytext);
-	fprintf(of,"\n");
-}
-
-<COMMENT>[-+]?[0-9]+\.?[0-9]+ {
-	fprintf(of,"#double:");
-	fprintf(of,"%s",yytext);
-	fprintf(of,"\n");
-}
-
-<COMMENT>[-+]?[0-9]+ {
-	fprintf(of,"#integer:");
-	fprintf(of,"%s",yytext);
-	fprintf(of,"\n");
+	fprintf(stdout,"#key:");
+	fprintf(stdout,"%s",yytext);
+	fprintf(stdout,"\n");
 }
 
 <COMMENT>{double_operator} {
-	fprintf(of,"#op:");
-	fprintf(of,"%s",yytext);
-	fprintf(of,"\n");
+	fprintf(stdout,"#op:");
+	fprintf(stdout,"%s",yytext);
+	fprintf(stdout,"\n");
 }
 
 <COMMENT>{single_operator} {
-	fprintf(of,"#op:");
-	fprintf(of,"%s",yytext);
-	fprintf(of,"\n");
+	fprintf(stdout,"#op:");
+	fprintf(stdout,"%s",yytext);
+	fprintf(stdout,"\n");
 }
 
 <COMMENT>{punctuation} {
-	fprintf(of,"#punc:");
-	fprintf(of,"%s",yytext);
-	fprintf(of,"\n");
+	fprintf(stdout,"#punc:");
+	fprintf(stdout,"%s",yytext);
+	fprintf(stdout,"\n");
 }
 
 <COMMENT>" "
 
-<COMMENT>[a-zA-Z]+ {
-	fprintf(of,"#id:");
-	fprintf(of,"%s",yytext);
-	fprintf(of,"\n");
+<COMMENT>[a-zA-Z_][a-zA-Z_0-9]* {
+	fprintf(stdout,"#id:");
+	fprintf(stdout,"%s",yytext);
+	fprintf(stdout,"\n");
 }
+
+<COMMENT>[0-9]+[a-zA-Z_]+ {
+	fprintf(stderr, "#Error at line %d: %s\n",yylineno,yytext);
+	exit(1);
+}
+
+<COMMENT>[-+]?[0-9]+\.?[0-9]+([eE][-+]?[0-9]+) {
+	fprintf(stdout,"#sci:");
+	fprintf(stdout,"%s",yytext);
+	fprintf(stdout,"\n");
+}
+
+<COMMENT>[-+]?[0-9]+\.[0-9]+ {
+	fprintf(stdout,"#double:");
+	fprintf(stdout,"%s",yytext);
+	fprintf(stdout,"\n");
+}
+
+<COMMENT>[-+]?[1-9][0-9]*|0 {
+	fprintf(stdout,"#integer:");
+	fprintf(stdout,"%s",yytext);
+	fprintf(stdout,"\n");
+}
+
 
 %%
 
 int main(void) {
 
-	of = fopen("./scanner.out","w");
 	yylex();
 	return 0;
 }
