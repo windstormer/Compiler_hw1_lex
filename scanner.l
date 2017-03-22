@@ -124,11 +124,20 @@ strcpy(lastsentence,yytext);
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
 }
+<COMMENT>0[0-9]+|0[xX][0-9a-fA-F]+ {
+	fprintf(stderr, "#Error at line %d: %s\n",yylineno,yytext);
+	exit(1);
+}
 
 <COMMENT>[-+]?[1-9][0-9]*|0 {
 	fprintf(stdout,"#integer:");
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
+}
+
+<COMMENT>. {
+	fprintf(stderr, "#Error at line %d: %s\n",yylineno,yytext);
+	exit(1);
 }
 
 
