@@ -18,7 +18,7 @@ double_operator (\+\+|--|<<|>>|==|===|<=|>=|!=|\|\||\&\&)
 single_operator (\+|-|<|>|\*|\/|!|\||\&|\%|=)
 punctuation (:|;|,|\.|\[|\]|\(|\)|\{|\})
 strings (\".*\")
-chars ('.*')
+chars ('.')
 
 %x COMMENT
 
