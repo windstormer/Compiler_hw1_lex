@@ -13,8 +13,8 @@ int sourceoff = 0;
 %}
 
 key "printf"|"scanf"|"for"|"while"|"do"|"if"|"else"|"switch"|"break"|"continue"|"true"|"false"|"case"|"return"|"void"|"null"|"const"|"default"
-type "int"|"double"|"short"|"float"|"char"|"bool"|"unsigned double"|"unsigned int"|"unsigned short"|"unsigned float"|"unsigned char"|"struct"
-double_operator (\+\+|--|<<|>>|==|===|<=|>=|!=|\|\||\&\&)
+type "int"|"double"|"short"|"float"|"char"|"bool"|"unsigned double"|"unsigned int"|"unsigned short"|"unsigned float"|"unsigned char"|"struct"|"unsigned"
+double_operator (\+\+|--|<<|>>|==|<=|>=|!=|\|\||\&\&)
 single_operator (\+|-|<|>|\*|\/|!|\||\&|\%|=)
 punctuation (:|;|,|\.|\[|\]|\(|\)|\{|\})
 strings (\".*\")
