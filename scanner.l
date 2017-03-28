@@ -10,6 +10,7 @@ int token = 1;
 int source = 1;
 
 
+
 %}
 
 key "printf"|"scanf"|"for"|"while"|"do"|"if"|"else"|"switch"|"break"|"continue"|"true"|"false"|"case"|"return"|"void"|"null"|"const"|"default"
@@ -21,47 +22,48 @@ strings (\".*\")
 chars ('.')
 
 %x COMMENT
+%x STATE
 
 %%
 
 .*\n {
 	if(strcmp(yytext,"#pragma token on\n")==0) {
-	token = 1;
-}
-if(strcmp(yytext,"#pragma source on\n")==0)
-{
-	source = 1;
-}
+		token = 1;
+	}
+	if(strcmp(yytext,"#pragma source on\n")==0)	{
+		source = 1;
+	}
 		strcpy(lastsentence,yytext);
-		if(token==1) {
-			yyless(0);
-			BEGIN COMMENT;
-		}else
-		{
 
-			lineCount++;
-			if(source==1)
-			fprintf(stdout,"%d:%s", lineCount,lastsentence);
-		}
+			if(token==1) {
+			yyless(0);
+			BEGIN STATE;
+			}else
+			{
+
+				lineCount++;
+				 if(source==1)
+				 	fprintf(stdout,"%d:%s", lineCount,lastsentence);
+			}
+		
 }
-<COMMENT>"#pragma source off" {
+<STATE>"#pragma source off" {
 	source = 0;
 }
-<COMMENT>"#pragma source on" {
+<STATE>"#pragma source on" {
 	strcpy(lastsentence,yytext);
 	strcat(lastsentence,"\n");
 	source = 1;
 }
 
-<COMMENT>"#pragma token off" {
+<STATE>"#pragma token off" {
 	token = 0;
 }
-<COMMENT>"#pragma token on" {
+<STATE>"#pragma token on" {
 	token = 1;
 }
 
-<COMMENT>\n {
-
+<STATE>\n {
 	if(source==1)
 	{
 		lineCount++;
@@ -74,89 +76,106 @@ if(strcmp(yytext,"#pragma source on\n")==0)
 			BEGIN 0;
 	}
 }
-
-<COMMENT>\/\/.* {
-strcpy(lastsentence,yytext);
-	strcat(lastsentence,"\n");
-
+<STATE>\/\*.*\n {
+	lineCount++;
+	strcpy(lastsentence,yytext);
+	fprintf(stdout,"%d:%s", lineCount,lastsentence);
+	BEGIN COMMENT;
+}
+<COMMENT>.*\*\/\n {
+	lineCount++;
+	strcpy(lastsentence,yytext);
+	fprintf(stdout,"%d:%s", lineCount,lastsentence);
+	BEGIN 0;
+}
+<COMMENT>.*\n {
+	lineCount++;
+	strcpy(lastsentence,yytext);
+	fprintf(stdout,"%d:%s", lineCount,lastsentence);
 }
 
-<COMMENT>{strings} {
+<STATE>\/\/.* {
+	strcpy(lastsentence,yytext);
+	strcat(lastsentence,"\n");
+}
+
+
+<STATE>{strings} {
 	strncpy(tempstring,yytext+1,strlen(yytext)-2);
 	fprintf(stdout,"#string:%s",tempstring);
 	fprintf(stdout,"\n");
 }
 
-<COMMENT>{chars} {
+<STATE>{chars} {
 	fprintf(stdout,"#char:%s",yytext);
 	fprintf(stdout,"\n");
 }
 
-<COMMENT>{key} { 
+<STATE>{key} { 
 	fprintf(stdout,"#key:");
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
 }
-<COMMENT>{type} { 
+<STATE>{type} { 
 	fprintf(stdout,"#key:");
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
 }
 
-<COMMENT>{double_operator} {
+<STATE>{double_operator} {
 	fprintf(stdout,"#op:");
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
 }
 
-<COMMENT>{single_operator} {
+<STATE>{single_operator} {
 	fprintf(stdout,"#op:");
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
 }
 
-<COMMENT>{punctuation} {
+<STATE>{punctuation} {
 	fprintf(stdout,"#punc:");
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
 }
 
-<COMMENT>" "
+<STATE>" "
 
-<COMMENT>[a-zA-Z_][a-zA-Z_0-9]* {
+<STATE>[a-zA-Z_][a-zA-Z_0-9]* {
 	fprintf(stdout,"#id:");
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
 }
 
-<COMMENT>[0-9]+[a-zA-Z_]+ {
+<STATE>[0-9]+[a-zA-Z_]+ {
 	fprintf(stderr, "#Error at line %d: %s\n",yylineno,yytext);
 	exit(1);
 }
 
-<COMMENT>[-+]?[0-9]+\.?[0-9]+([eE][-+]?[0-9]+) {
+<STATE>[-+]?[0-9]+\.?[0-9]+([eE][-+]?[0-9]+) {
 	fprintf(stdout,"#sci:");
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
 }
 
-<COMMENT>[-+]?[0-9]+\.[0-9]+ {
+<STATE>[-+]?[0-9]+\.[0-9]+ {
 	fprintf(stdout,"#double:");
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
 }
-<COMMENT>0[0-9]+|0[xX][0-9a-fA-F]+ {
+<STATE>0[0-9]+|0[xX][0-9a-fA-F]+ {
 	fprintf(stderr, "#Error at line %d: %s\n",yylineno,yytext);
 	exit(1);
 }
 
-<COMMENT>[-+]?[1-9][0-9]*|0 {
+<STATE>[-+]?[1-9][0-9]*|0 {
 	fprintf(stdout,"#integer:");
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
 }
 
-<COMMENT>. {
+<STATE>. {
 	fprintf(stderr, "#Error at line %d: %s\n",yylineno,yytext);
 	exit(1);
 }
