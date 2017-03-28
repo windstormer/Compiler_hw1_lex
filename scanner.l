@@ -6,8 +6,8 @@
 int	lineCount=0;
 char lastsentence[3000];
 char tempstring[3000];
-int tokenoff = 0;
-int sourceoff = 0;
+int token = 1;
+int source = 1;
 
 
 %}
@@ -24,33 +24,54 @@ chars ('.')
 
 %%
 
-
 .*\n {
+	if(strcmp(yytext,"#pragma token on\n")==0) {
+	token = 1;
+}
+if(strcmp(yytext,"#pragma source on\n")==0)
+{
+	source = 1;
+}
 		strcpy(lastsentence,yytext);
-		if(tokenoff==0) {
+		if(token==1) {
 			yyless(0);
 			BEGIN COMMENT;
 		}else
 		{
+
 			lineCount++;
+			if(source==1)
 			fprintf(stdout,"%d:%s", lineCount,lastsentence);
 		}
 }
 <COMMENT>"#pragma source off" {
-	sourceoff = 1;
+	source = 0;
+}
+<COMMENT>"#pragma source on" {
+	strcpy(lastsentence,yytext);
+	strcat(lastsentence,"\n");
+	source = 1;
 }
 
 <COMMENT>"#pragma token off" {
-	tokenoff = 1;
+	token = 0;
+}
+<COMMENT>"#pragma token on" {
+	token = 1;
 }
 
 <COMMENT>\n {
 
-	if(sourceoff==0)
+	if(source==1)
 	{
 		lineCount++;
 		fprintf(stdout,"%d:%s", lineCount,lastsentence);
 		BEGIN 0;
+	}else
+	{
+		lineCount++;
+		if(token==0)
+			BEGIN 0;
 	}
 }
 
