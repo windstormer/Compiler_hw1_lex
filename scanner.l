@@ -13,7 +13,13 @@ int source = 1;
 
 %}
 
-key "printf"|"scanf"|"for"|"while"|"do"|"if"|"else"|"switch"|"break"|"continue"|"true"|"false"|"case"|"return"|"void"|"null"|"const"|"default"
+stdio "printf"|"scanf"|"fprintf"|"fscanf"|"sprintf"|"sscanf"|"vfprintf"|"vprintf"|"vsprintf"
+stdfile "fclose"|"fflush"|"fopen"|"freopen"|"remove"|"rename"|"setbuf"|"setvbuf"|"tmpfile"|"tmpnam"
+stdchio "fgetc"|"fgets"|"fputc"|"fputs"|"getc"|"getchar"|"gets"|"putc"|"putchar"|"puts"|"ungetc"
+stdblio "fread"|"fwrite"
+stdfilepos "fgetpos"|"fseek"|"fsetpos"|"ftell"|"rewind"
+stderror "clearerr"|"feof"|"ferror"|"perror"
+key "for"|"while"|"do"|"if"|"else"|"switch"|"break"|"continue"|"true"|"false"|"case"|"return"|"void"|"null"|"const"|"default"
 type "int"|"double"|"short"|"float"|"char"|"bool"|"unsigned double"|"unsigned int"|"unsigned short"|"unsigned float"|"unsigned char"|"struct"|"unsigned"
 double_operator (\+\+|--|<<|>>|==|<=|>=|!=|\|\||\&\&)
 single_operator (\+|-|<|>|\*|\/|!|\||\&|\%|=)
@@ -124,6 +130,36 @@ Invalid_int 0[0-9]+|0[xX][0-9a-fA-F]+
 }
 
 <STATE>{key} { 
+	fprintf(stdout,"#key:");
+	fprintf(stdout,"%s",yytext);
+	fprintf(stdout,"\n");
+}
+<STATE>{stdio} { 
+	fprintf(stdout,"#key:");
+	fprintf(stdout,"%s",yytext);
+	fprintf(stdout,"\n");
+}
+<STATE>{stdfile} { 
+	fprintf(stdout,"#key:");
+	fprintf(stdout,"%s",yytext);
+	fprintf(stdout,"\n");
+}
+<STATE>{stdchio} { 
+	fprintf(stdout,"#key:");
+	fprintf(stdout,"%s",yytext);
+	fprintf(stdout,"\n");
+}
+<STATE>{stdblio} { 
+	fprintf(stdout,"#key:");
+	fprintf(stdout,"%s",yytext);
+	fprintf(stdout,"\n");
+}
+<STATE>{stdfilepos} { 
+	fprintf(stdout,"#key:");
+	fprintf(stdout,"%s",yytext);
+	fprintf(stdout,"\n");
+}
+<STATE>{stderror} { 
 	fprintf(stdout,"#key:");
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
