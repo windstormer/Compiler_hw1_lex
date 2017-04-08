@@ -161,11 +161,11 @@ Invalid_int 0[0-9]+|0[xX][0-9a-fA-F]+
 }
 
 <STATE>{Invalid_id} {
-	fprintf(stderr, "#Error at line %d: %s\n",yylineno,yytext);
+	fprintf(stderr, "Error at line %d: %s\n",yylineno,yytext);
 	exit(1);
 }
 <STATE>{Invalid_sci} {
-	fprintf(stderr, "#Error at line %d: %s\n",yylineno,yytext);
+	fprintf(stderr, "Error at line %d: %s\n",yylineno,yytext);
 	exit(1);
 }
 
@@ -181,7 +181,7 @@ Invalid_int 0[0-9]+|0[xX][0-9a-fA-F]+
 	fprintf(stdout,"\n");
 }
 <STATE>{Invalid_int} {
-	fprintf(stderr, "#Error at line %d: %s\n",yylineno,yytext);
+	fprintf(stderr, "Error at line %d: %s\n",yylineno,yytext);
 	exit(1);
 }
 
@@ -192,7 +192,7 @@ Invalid_int 0[0-9]+|0[xX][0-9a-fA-F]+
 }
 
 <STATE>. {
-	fprintf(stderr, "#Error at line %d: %s\n",yylineno,yytext);
+	fprintf(stderr, "Error at line %d: %s\n",yylineno,yytext);
 	exit(1);
 }
 
