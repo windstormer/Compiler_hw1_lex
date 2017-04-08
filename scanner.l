@@ -33,6 +33,7 @@ Invalid_int 0[0-9]+|0[xX][0-9a-fA-F]+
 
 %x COMMENT
 %x STATE
+%x RE
 
 %%
 
@@ -86,32 +87,28 @@ Invalid_int 0[0-9]+|0[xX][0-9a-fA-F]+
 			BEGIN 0;
 	}
 }
-<STATE>\/\*.*\*\/\n {
-	lineCount++;
-	strcpy(lastsentence,yytext);
-	fprintf(stdout,"%d:%s", lineCount,lastsentence);
+<STATE>\/\*.*\*\/ {
 }
-<STATE>\/\*.*\n {
-	lineCount++;
-	strcpy(lastsentence,yytext);
-	fprintf(stdout,"%d:%s", lineCount,lastsentence);
+<STATE>\/\* {	
 	BEGIN COMMENT;
 }
-<COMMENT>.*\*\/\n {
+<COMMENT>\n {
 	lineCount++;
-	strcpy(lastsentence,yytext);
 	fprintf(stdout,"%d:%s", lineCount,lastsentence);
-	BEGIN 0;
+	BEGIN RE;
 }
-<COMMENT>.*\n {
-	lineCount++;
+<RE>.*\n {
 	strcpy(lastsentence,yytext);
-	fprintf(stdout,"%d:%s", lineCount,lastsentence);
+	yyless(0);
+	BEGIN COMMENT;
+}
+<COMMENT>.*\*\/ {
+	BEGIN STATE;
+}
+<COMMENT>. {
 }
 
 <STATE>\/\/.* {
-	strcpy(lastsentence,yytext);
-	strcat(lastsentence,"\n");
 }
 
 
