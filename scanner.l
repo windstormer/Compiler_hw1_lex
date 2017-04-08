@@ -19,7 +19,7 @@ double_operator (\+\+|--|<<|>>|==|<=|>=|!=|\|\||\&\&)
 single_operator (\+|-|<|>|\*|\/|!|\||\&|\%|=)
 punctuation (:|;|,|\.|\[|\]|\(|\)|\{|\})
 strings (\".*\")
-chars ('.')
+chars ('.'|'\\n')
 
 %x COMMENT
 %x STATE
@@ -75,6 +75,11 @@ chars ('.')
 		if(token==0)
 			BEGIN 0;
 	}
+}
+<STATE>\/\*.*\*\/\n {
+	lineCount++;
+	strcpy(lastsentence,yytext);
+	fprintf(stdout,"%d:%s", lineCount,lastsentence);
 }
 <STATE>\/\*.*\n {
 	lineCount++;
@@ -153,13 +158,13 @@ chars ('.')
 	exit(1);
 }
 
-<STATE>[-+]?[0-9]+\.?[0-9]+([eE][-+]?[0-9]+) {
+<STATE>[-+]?([0-9]*\.?[0-9]+|[0-9]+\.[0-9]*)([eE][-+]?[0-9]+) {
 	fprintf(stdout,"#sci:");
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
 }
 
-<STATE>[-+]?[0-9]+\.[0-9]+ {
+<STATE>[-+]?[0-9]*\.[0-9]+|[-+]?[0-9]+\.[0-9]* {
 	fprintf(stdout,"#double:");
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
