@@ -19,9 +19,17 @@ double_operator (\+\+|--|<<|>>|==|<=|>=|!=|\|\||\&\&)
 single_operator (\+|-|<|>|\*|\/|!|\||\&|\%|=)
 punctuation (:|;|,|\.|\[|\]|\(|\)|\{|\})
 strings (\".*\")
-chars ('.'|'\\n'|'\\t')
-
 Quote "
+chars ('.'|'\\n'|'\\t')
+id [a-zA-Z_][a-zA-Z_0-9]*
+sci [-+]?([0-9]*\.?[0-9]+|[0-9]+\.[0-9]*)([eE][-+]?[0-9]+)
+Double [-+]?[0-9]*\.[0-9]+|[-+]?[0-9]+\.[0-9]*
+Int [-+]?[1-9][0-9]*|0
+
+Invalid_sci [-+]?([0-9]*\.?[0-9]+|[0-9]+\.[0-9]*)([eE][-+]?([0-9]*\.[0-9]+|[0-9]+\.[0-9]*))
+Invalid_id [0-9]+[a-zA-Z_]+
+Invalid_int 0[0-9]+|0[xX][0-9a-fA-F]+
+
 
 %x COMMENT
 %x STATE
@@ -149,38 +157,38 @@ Quote "
 
 <STATE>" "|"\t"
 
-<STATE>[a-zA-Z_][a-zA-Z_0-9]* {
+<STATE>{id} {
 	fprintf(stdout,"#id:");
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
 }
 
-<STATE>[0-9]+[a-zA-Z_]+ {
+<STATE>{Invalid_id} {
 	fprintf(stderr, "#Error at line %d: %s\n",yylineno,yytext);
 	exit(1);
 }
-<STATE>[-+]?([0-9]*\.?[0-9]+|[0-9]+\.[0-9]*)([eE][-+]?([0-9]*\.[0-9]+|[0-9]+\.[0-9]*)) {
+<STATE>{Invalid_sci} {
 	fprintf(stderr, "#Error at line %d: %s\n",yylineno,yytext);
 	exit(1);
 }
 
-<STATE>[-+]?([0-9]*\.?[0-9]+|[0-9]+\.[0-9]*)([eE][-+]?[0-9]+) {
+<STATE>{sci} {
 	fprintf(stdout,"#sci:");
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
 }
 
-<STATE>[-+]?[0-9]*\.[0-9]+|[-+]?[0-9]+\.[0-9]* {
+<STATE>{Double} {
 	fprintf(stdout,"#double:");
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
 }
-<STATE>0[0-9]+|0[xX][0-9a-fA-F]+ {
+<STATE>{Invalid_int} {
 	fprintf(stderr, "#Error at line %d: %s\n",yylineno,yytext);
 	exit(1);
 }
 
-<STATE>[-+]?[1-9][0-9]*|0 {
+<STATE>{Int} {
 	fprintf(stdout,"#integer:");
 	fprintf(stdout,"%s",yytext);
 	fprintf(stdout,"\n");
