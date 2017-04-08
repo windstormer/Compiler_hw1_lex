@@ -19,7 +19,9 @@ double_operator (\+\+|--|<<|>>|==|<=|>=|!=|\|\||\&\&)
 single_operator (\+|-|<|>|\*|\/|!|\||\&|\%|=)
 punctuation (:|;|,|\.|\[|\]|\(|\)|\{|\})
 strings (\".*\")
-chars ('.'|'\\n')
+chars ('.'|'\\n'|'\\t')
+
+Quote "
 
 %x COMMENT
 %x STATE
@@ -145,7 +147,7 @@ chars ('.'|'\\n')
 	fprintf(stdout,"\n");
 }
 
-<STATE>" "
+<STATE>" "|"\t"
 
 <STATE>[a-zA-Z_][a-zA-Z_0-9]* {
 	fprintf(stdout,"#id:");
@@ -154,6 +156,10 @@ chars ('.'|'\\n')
 }
 
 <STATE>[0-9]+[a-zA-Z_]+ {
+	fprintf(stderr, "#Error at line %d: %s\n",yylineno,yytext);
+	exit(1);
+}
+<STATE>[-+]?([0-9]*\.?[0-9]+|[0-9]+\.[0-9]*)([eE][-+]?([0-9]*\.[0-9]+|[0-9]+\.[0-9]*)) {
 	fprintf(stderr, "#Error at line %d: %s\n",yylineno,yytext);
 	exit(1);
 }
