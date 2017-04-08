@@ -9,7 +9,13 @@ char tempstring[3000];
 int token = 1;
 int source = 1;
 
-
+void PrintToken(const char str[])
+{
+	if(token==1)
+	{
+		fprintf(stdout,"%s:%s\n",str,tempstring);
+	}
+}
 
 %}
 
@@ -50,26 +56,17 @@ Invalid_int 0[0-9]+|0[xX][0-9a-fA-F]+
 	if(strcmp(yytext,"#pragma source on\n")==0)	{
 		source = 1;
 	}
+
 		strcpy(lastsentence,yytext);
 
-			if(token==1) {
 			yyless(0);
 			BEGIN STATE;
-			}else
-			{
-
-				lineCount++;
-				 if(source==1)
-				 	fprintf(stdout,"%d:%s", lineCount,lastsentence);
-			}
 		
 }
 <STATE>"#pragma source off" {
 	source = 0;
 }
 <STATE>"#pragma source on" {
-	strcpy(lastsentence,yytext);
-	strcat(lastsentence,"\n");
 	source = 1;
 }
 
@@ -89,8 +86,7 @@ Invalid_int 0[0-9]+|0[xX][0-9a-fA-F]+
 	}else
 	{
 		lineCount++;
-		if(token==0)
-			BEGIN 0;
+		BEGIN 0;
 	}
 }
 <STATE>\/\*.*\*\/ {
@@ -120,80 +116,67 @@ Invalid_int 0[0-9]+|0[xX][0-9a-fA-F]+
 
 <STATE>{strings} {
 	strncpy(tempstring,yytext+1,strlen(yytext)-2);
-	fprintf(stdout,"#string:%s",tempstring);
-	fprintf(stdout,"\n");
+	PrintToken("#string");
 }
 
 <STATE>{chars} {
-	fprintf(stdout,"#char:%s",yytext);
-	fprintf(stdout,"\n");
+	strcpy(tempstring,yytext);
+	PrintToken("#char");
 }
 
 <STATE>{key} { 
-	fprintf(stdout,"#key:");
-	fprintf(stdout,"%s",yytext);
-	fprintf(stdout,"\n");
+	strcpy(tempstring,yytext);
+	PrintToken("#key");
 }
 <STATE>{stdio} { 
-	fprintf(stdout,"#key:");
-	fprintf(stdout,"%s",yytext);
-	fprintf(stdout,"\n");
+	strcpy(tempstring,yytext);
+	PrintToken("#key");
 }
 <STATE>{stdfile} { 
-	fprintf(stdout,"#key:");
-	fprintf(stdout,"%s",yytext);
-	fprintf(stdout,"\n");
+	strcpy(tempstring,yytext);
+	PrintToken("#key");
 }
 <STATE>{stdchio} { 
-	fprintf(stdout,"#key:");
-	fprintf(stdout,"%s",yytext);
-	fprintf(stdout,"\n");
+	strcpy(tempstring,yytext);
+	PrintToken("#key");
 }
 <STATE>{stdblio} { 
-	fprintf(stdout,"#key:");
-	fprintf(stdout,"%s",yytext);
-	fprintf(stdout,"\n");
+	strcpy(tempstring,yytext);
+	PrintToken("#key");
 }
 <STATE>{stdfilepos} { 
-	fprintf(stdout,"#key:");
-	fprintf(stdout,"%s",yytext);
-	fprintf(stdout,"\n");
+	strcpy(tempstring,yytext);
+	PrintToken("#key");
 }
 <STATE>{stderror} { 
-	fprintf(stdout,"#key:");
-	fprintf(stdout,"%s",yytext);
-	fprintf(stdout,"\n");
+	strcpy(tempstring,yytext);
+	PrintToken("#key");
 }
 <STATE>{type} { 
-	fprintf(stdout,"#key:");
-	fprintf(stdout,"%s",yytext);
-	fprintf(stdout,"\n");
+	strcpy(tempstring,yytext);
+	PrintToken("#key");
 }
 
 <STATE>{double_operator} {
-	fprintf(stdout,"#op:");
-	fprintf(stdout,"%s",yytext);
-	fprintf(stdout,"\n");
+	strcpy(tempstring,yytext);
+	PrintToken("#op");
 }
 
 <STATE>{single_operator} {
-	fprintf(stdout,"#op:");
-	fprintf(stdout,"%s",yytext);
-	fprintf(stdout,"\n");
+	strcpy(tempstring,yytext);
+	PrintToken("#op");
 }
 
 <STATE>{punctuation} {
-	fprintf(stdout,"#punc:");
-	fprintf(stdout,"%s",yytext);
-	fprintf(stdout,"\n");
+	strcpy(tempstring,yytext);
+	PrintToken("#punc");
 }
 
 <STATE>" "|"\t"
 
 <STATE>{id} {
-	fprintf(stdout,"#id:");
-	fprintf(stdout,"%s",yytext);
-	fprintf(stdout,"\n");
+	strcpy(tempstring,yytext);
+	PrintToken("#id");
 }
 
 <STATE>{Invalid_id} {
@@ -206,15 +189,13 @@ Invalid_int 0[0-9]+|0[xX][0-9a-fA-F]+
 }
 
 <STATE>{sci} {
-	fprintf(stdout,"#sci:");
-	fprintf(stdout,"%s",yytext);
-	fprintf(stdout,"\n");
+	strcpy(tempstring,yytext);
+	PrintToken("#sci");
 }
 
 <STATE>{Double} {
-	fprintf(stdout,"#double:");
-	fprintf(stdout,"%s",yytext);
-	fprintf(stdout,"\n");
+	strcpy(tempstring,yytext);
+	PrintToken("#double");
 }
 <STATE>{Invalid_int} {
 	fprintf(stderr, "Error at line %d: %s\n",yylineno,yytext);
@@ -222,9 +203,8 @@ Invalid_int 0[0-9]+|0[xX][0-9a-fA-F]+
 }
 
 <STATE>{Int} {
-	fprintf(stdout,"#integer:");
-	fprintf(stdout,"%s",yytext);
-	fprintf(stdout,"\n");
+	strcpy(tempstring,yytext);
+	PrintToken("#integer");
 }
 
 <STATE>. {
