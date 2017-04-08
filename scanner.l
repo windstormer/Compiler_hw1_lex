@@ -116,6 +116,7 @@ Invalid_int 0[0-9]+|0[xX][0-9a-fA-F]+
 
 <STATE>{strings} {
 	strncpy(tempstring,yytext+1,strlen(yytext)-2);
+	tempstring[strlen(yytext)-2]='\0';
 	PrintToken("#string");
 }
 
